@@ -1,14 +1,12 @@
-# 🧱 Base Image
 FROM ubuntu:20.04
 
-# 🛠 Set environment variables
+# Environment setup
 ENV DEBIAN_FRONTEND=noninteractive \
-    NGROK_VERSION=3-stable \
     ROOT_PASSWORD=root \
     LANG=C.UTF-8 \
     LC_ALL=C.UTF-8
 
-# 📦 Install essential packages
+# Install essentials
 RUN apt-get update && apt-get install -y \
     openssh-server \
     wget \
@@ -17,10 +15,9 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     htop \
     nano \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 🔒 Setup SSH
+# Setup SSH
 RUN mkdir -p /var/run/sshd /root/.ssh \
     && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config \
     && echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config \
@@ -29,23 +26,17 @@ RUN mkdir -p /var/run/sshd /root/.ssh \
     && echo "ClientAliveCountMax 2" >> /etc/ssh/sshd_config \
     && echo "root:${ROOT_PASSWORD}" | chpasswd
 
-# ⚡ Install Ngrok (latest v3)
-RUN wget -q https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v${NGROK_VERSION}-linux-amd64.tgz \
-    && tar -xzf ngrok-v${NGROK_VERSION}-linux-amd64.tgz -C /usr/local/bin \
-    && chmod +x /usr/local/bin/ngrok \
-    && rm ngrok-v${NGROK_VERSION}-linux-amd64.tgz
+# Install Playit.gg tunnel client
+RUN wget -q https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-linux-amd64 \
+    && mv playit-linux-amd64 /usr/local/bin/playit \
+    && chmod +x /usr/local/bin/playit
 
-# 📂 Add ngrok authtoken securely
-# 👉 Replace below token with yours during build OR use ARG for CI/CD flexibility
-ARG NGROK_AUTHTOKEN
-RUN ngrok config add-authtoken $NGROK_AUTHTOKEN
-
-# 🧩 Optional startup script for flexibility
+# Copy startup script
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# 🔥 Expose SSH port
+# Expose SSH port
 EXPOSE 22
 
-# 🚀 Start SSH and Ngrok tunnel together
+# Start SSH + Playit tunnel
 CMD ["/bin/bash", "/start.sh"]
