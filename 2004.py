@@ -1,4 +1,5 @@
 import sys
+import dis
 import marshal
 
 if sys.version[:3] == '3.9':
