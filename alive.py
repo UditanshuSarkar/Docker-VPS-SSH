@@ -37,7 +37,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
-            self.wfile.write(b"<h1>✅ VPS is alive and running!</h1>")
+            self.wfile.write(b"<h1> VPS is alive and running!</h1>")
         except BrokenPipeError:
             # Browser disconnected — ignore
             pass
